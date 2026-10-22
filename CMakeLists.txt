@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.5)
 
 if (NOT DEFINED CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
@@ -66,6 +66,7 @@ ENDIF(LIBNFC_CONFFILES_MODE)
 
 option (BUILD_EXAMPLES "build examples ON/OFF" ON)
 option (BUILD_UTILS "build utils ON/OFF" ON)
+option (BUILD_SOFTWARE_TESTS "build tests that need no NFC reader, run them with ctest ON/OFF" OFF)
 
 option (BUILD_DEBPKG "build debian package ON/OFF" OFF)
 
@@ -200,6 +201,11 @@ endif ()
 
 if (BUILD_EXAMPLES)
   add_subdirectory (examples)
+endif ()
+
+if (BUILD_SOFTWARE_TESTS)
+  enable_testing ()
+  add_subdirectory (test/software)
 endif ()
 
 if (NOT MSVC)
