@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-cmake:
+    name: Linux CMake (${{ matrix.cc }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build pkg-config libusb-dev libpcsclite-dev ${{ matrix.cc == 'clang' && 'clang' || '' }}
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=${{ matrix.cc }} -DBUILD_SOFTWARE_TESTS=ON
+          cmake --build build
+      - name: Run tests
+        run: ctest --test-dir build --no-tests=error --output-on-failure
+      - name: Smoke test nfc-list without a reader
+        run: |
+          out=$(LIBNFC_AUTO_SCAN=false build/utils/nfc-list 2>&1) || true
+          echo "$out"
+          echo "$out" | grep -q "No NFC device found"
+      - name: Install
+        run: DESTDIR="$PWD/stage" cmake --install build
+
+  linux-autotools:
+    name: Linux autotools
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake libtool pkg-config libusb-dev libpcsclite-dev
+      - name: Configure and build
+        run: |
+          autoreconf -vfi
+          mkdir build && cd build
+          ../configure --prefix="$HOME/.local"
+          make -j"$(nproc)"
+      - name: Install
+        run: make -C build install
+      - name: Smoke test nfc-list without a reader
+        run: |
+          out=$(LIBNFC_AUTO_SCAN=false LD_LIBRARY_PATH="$HOME/.local/lib" "$HOME/.local/bin/nfc-list" 2>&1) || true
+          echo "$out"
+          echo "$out" | grep -q "No NFC device found"
+
+  macos:
+    name: macOS CMake
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install dependencies
+        run: brew install cmake ninja pkg-config libusb-compat
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SOFTWARE_TESTS=ON
+          cmake --build build
+      - name: Run tests
+        run: ctest --test-dir build --no-tests=error --output-on-failure
+      - name: Smoke test nfc-list without a reader
+        run: |
+          out=$(LIBNFC_AUTO_SCAN=false build/utils/nfc-list 2>&1) || true
+          echo "$out"
+          echo "$out" | grep -q "No NFC device found"
+
+  windows-mingw:
+    name: Windows MinGW CMake
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: msys2/setup-msys2@61f9e5e925871ba6c9e3e8da24ede83ea27fa91f # v2.27.0
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-libusb-compat-0.1
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SOFTWARE_TESTS=ON
+          cmake --build build
+      - name: Run tests
+        run: ctest --test-dir build --no-tests=error --output-on-failure
