@@ -86,9 +86,6 @@ jobs:
   windows-mingw:
     name: Windows MinGW CMake
     runs-on: windows-latest
-    # Known failure: contrib/win32/stdlib.c declares `char *str[32]` and passes it
-    # to strcpy (nfc-tools/libnfc#765). Remove this line once that is fixed.
-    continue-on-error: true
     defaults:
       run:
         shell: msys2 {0}
@@ -111,7 +108,9 @@ jobs:
           cp /mingw64/lib/libusb0.dll.a build/LibUSB-Win32/lib/gcc/libusb.dll.a
       - name: Configure and build
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SOFTWARE_TESTS=ON
+          # Examples are off: pn53x-diagnose, pn53x-sam and pn53x-tamashell do not link
+          # on Windows (maksimtech/libnfc#3)
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_EXAMPLES=OFF -DBUILD_SOFTWARE_TESTS=ON
           cmake --build build
       - name: Run tests
         run: ctest --test-dir build --no-tests=error --output-on-failure

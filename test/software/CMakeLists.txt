@@ -13,3 +13,9 @@ ADD_TEST(NAME no_hardware COMMAND test_no_hardware)
 # on the readers plugged into the machine running the tests.
 SET_TESTS_PROPERTIES(no_hardware PROPERTIES
   ENVIRONMENT "LIBNFC_AUTO_SCAN=false;LIBNFC_INTRUSIVE_SCAN=false;LIBNFC_LOG_LEVEL=0")
+
+IF(WIN32)
+  # setenv()/unsetenv() replacements that Windows lacks
+  ADD_EXECUTABLE(test_win32_stdlib test_win32_stdlib.c ${CMAKE_SOURCE_DIR}/contrib/win32/stdlib.c)
+  ADD_TEST(NAME win32_stdlib COMMAND test_win32_stdlib)
+ENDIF(WIN32)
