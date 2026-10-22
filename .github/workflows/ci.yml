@@ -86,9 +86,6 @@ jobs:
   windows-mingw:
     name: Windows MinGW CMake
     runs-on: windows-latest
-    # Known failure: contrib/win32/stdlib.c declares `char *str[32]` and passes it
-    # to strcpy (nfc-tools/libnfc#765). Remove this line once that is fixed.
-    continue-on-error: true
     defaults:
       run:
         shell: msys2 {0}
