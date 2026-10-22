@@ -100,7 +100,12 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-pkgconf
-            mingw-w64-x86_64-libusb-compat-0.1
+            mingw-w64-x86_64-libusb-win32
+      - name: Lay out libusb-win32 where cmake/modules/FindLIBUSB.cmake looks for it
+        run: |
+          mkdir -p build/LibUSB-Win32/include build/LibUSB-Win32/lib/gcc
+          cp /mingw64/include/lusb0_usb.h build/LibUSB-Win32/include/
+          cp /mingw64/lib/libusb0.dll.a build/LibUSB-Win32/lib/gcc/libusb.dll.a
       - name: Configure and build
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SOFTWARE_TESTS=ON
