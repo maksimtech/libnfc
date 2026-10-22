@@ -98,21 +98,21 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: msys2/setup-msys2@61f9e5e925871ba6c9e3e8da24ede83ea27fa91f # v2.27.0
         with:
-          msystem: MINGW64
+          msystem: UCRT64
           update: true
           install: >-
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
-            mingw-w64-x86_64-pkgconf
-            mingw-w64-x86_64-libusb
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-libusb
       - name: Lay out libusb-1.0 where cmake/modules/FindLIBUSB.cmake looks for it
         run: |
           root="$(cygpath -u "$ProgramFiles")/libusb"
           mkdir -p "$root/include" "$root/MinGW64/static" "$root/MinGW64/dll"
-          cp /mingw64/include/libusb-1.0/libusb.h "$root/include/"
-          cp /mingw64/lib/libusb-1.0.a "$root/MinGW64/static/"
-          cp /mingw64/bin/libusb-1.0.dll "$root/MinGW64/dll/"
+          cp /ucrt64/include/libusb-1.0/libusb.h "$root/include/"
+          cp /ucrt64/lib/libusb-1.0.a "$root/MinGW64/static/"
+          cp /ucrt64/bin/libusb-1.0.dll "$root/MinGW64/dll/"
       - name: Configure and build
         run: |
           # Examples are off: pn53x-diagnose, pn53x-sam and pn53x-tamashell do not link
