@@ -34,24 +34,28 @@
 // Handle platform specific includes
 #include "contrib/windows.h"
 
-//There is no setenv()and unsetenv() in windows,but we can use putenv() instead.
+#include <stdlib.h>
+#include <string.h>
+
+// There is no setenv() and unsetenv() in Windows, but _putenv_s() is there: it
+// copies its arguments, so there is no fixed-size buffer to overflow.
 int setenv(const char *name, const char *value, int overwrite)
 {
-  char *env = getenv(name);
-  if ((env && overwrite) || (!env)) {
-    char *str[32];
-    strcpy(str, name);
-    strcat(str, "=");
-    strcat(str, value);
-    return putenv(str);
+  if (!name || !*name || strchr(name, '=') || !value) {
+    return -1;
   }
-  return -1;
+  // POSIX: an existing variable is left alone, and that is not an error
+  if (!overwrite && getenv(name)) {
+    return 0;
+  }
+  return _putenv_s(name, value) == 0 ? 0 : -1;
 }
 
 void unsetenv(const char *name)
 {
-  char *str[32];
-  strcpy(str, name);
-  strcat(str, "=");
-  putenv(str);
+  if (!name || !*name || strchr(name, '=')) {
+    return;
+  }
+  // an empty value removes the variable from the environment
+  _putenv_s(name, "");
 }
