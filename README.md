@@ -13,6 +13,25 @@
 -*
 ```
 
+About this fork
+===============
+
+This is a maintained fork of [nfc-tools/libnfc](https://github.com/nfc-tools/libnfc),
+the origin of this code and of the library's history. Upstream has had no commit since
+March 2025, and this fork exists to give the open issues and pull requests somewhere to
+go ([announcement](https://github.com/nfc-tools/libnfc/issues/766)). It is not the
+official project and is not affiliated with it.
+
+* Every fix made here is offered to upstream as a pull request, in whatever shape its
+  maintainers prefer. If upstream becomes active again, it remains the better home.
+* The library keeps its name, version scheme and API/ABI (`libnfc.so.6`), so it stays a
+  drop-in replacement. Nothing is renamed.
+* Changes are covered by tests that need no NFC reader (`-DBUILD_SOFTWARE_TESTS=ON`, then
+  `ctest`) and by CI on Linux, macOS and Windows. Behaviour that depends on a specific
+  reader cannot be tested there, and is marked as untested in the pull request.
+* Bug reports: [issues of this fork](https://github.com/maksimtech/libnfc/issues). Please
+  include the reader model, the OS and the output of `nfc-list -v`.
+
 General Information
 ===================
 
