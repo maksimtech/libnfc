@@ -108,7 +108,7 @@ jobs:
             mingw-w64-ucrt-x86_64-libusb
       - name: Lay out libusb-1.0 where cmake/modules/FindLIBUSB.cmake looks for it
         run: |
-          root="$(cygpath -u "$ProgramFiles")/libusb"
+          root="/c/Program Files/libusb"
           mkdir -p "$root/include" "$root/MinGW64/static" "$root/MinGW64/dll"
           cp /ucrt64/include/libusb-1.0/libusb.h "$root/include/"
           cp /ucrt64/lib/libusb-1.0.a "$root/MinGW64/static/"
